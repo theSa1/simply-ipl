@@ -302,7 +302,7 @@ function App() {
             >
               <DropdownMenuTrigger asChild>
                 <p className="text-white cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
-                  {!quality || !availableQualities
+                  {quality === undefined || !availableQualities
                     ? "Auto"
                     : `${availableQualities[quality]}p`}
                 </p>
