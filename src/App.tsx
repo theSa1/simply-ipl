@@ -43,6 +43,7 @@ function App() {
   }>();
   const [selectedLanguage, setSelectedLanguage] = useState<number>(0);
   const [hls, setHls] = useState<Hls>();
+  const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -144,6 +145,14 @@ function App() {
     window.addEventListener("keydown", (e) => {
       if (e.key === " ") {
         setIsPlaying((prev) => !prev);
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      if (window.innerHeight < window.innerWidth) {
+        setIsLandscape(true);
+      } else {
+        setIsLandscape(false);
       }
     });
 
@@ -334,15 +343,14 @@ function App() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          {window.innerHeight < window.innerWidth &&
-            videoRef.current?.requestPictureInPicture && (
-              <PIPIcon
-                className="h-8 w-8 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
-                onClick={() => {
-                  videoRef.current?.requestPictureInPicture();
-                }}
-              />
-            )}
+          {isLandscape && videoRef.current?.requestPictureInPicture && (
+            <PIPIcon
+              className="h-8 w-8 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
+              onClick={() => {
+                videoRef.current?.requestPictureInPicture();
+              }}
+            />
+          )}
           {isMuted ? (
             <MuteIcon
               className="h-8 w-8 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
