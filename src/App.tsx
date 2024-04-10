@@ -144,7 +144,7 @@ function App() {
       document.getElementById("body")?.requestFullscreen({
         navigationUI: "hide",
       });
-      screen.orientation.lock("landscape-primary");
+      screen.orientation.lock("landscape");
       setIsFullScreen(true);
     } else {
       document.exitFullscreen();
