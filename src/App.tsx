@@ -338,10 +338,7 @@ function App() {
             <PIPIcon
               className="h-8 w-8 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
               onClick={() => {
-                if (videoRef.current?.requestPictureInPicture()) {
-                  console.log("Entered PIP mode");
-                  window.close();
-                }
+                videoRef.current?.requestPictureInPicture();
               }}
             />
           )}
