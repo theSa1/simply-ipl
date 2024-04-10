@@ -38,7 +38,7 @@ function App() {
       highBufferWatchdogPeriod: 1,
     };
 
-    const hls = new Hls();
+    const hls = new Hls(config);
 
     if (Hls.isSupported() && videoRef.current) {
       hls.loadSource(
