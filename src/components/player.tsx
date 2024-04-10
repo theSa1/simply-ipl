@@ -38,17 +38,17 @@ export const Player = ({ data }: { data: Data }) => {
   const [isLandscape, setIsLandscape] = useState(true);
 
   useEffect(() => {
-    const config = {
-      enableWorker: true,
-      maxBufferLength: 1,
-      liveBackBufferLength: 0,
-      liveSyncDuration: 0,
-      liveMaxLatencyDuration: 5,
-      liveDurationInfinity: true,
-      highBufferWatchdogPeriod: 1,
-    };
+    // const config = {
+    //   enableWorker: true,
+    //   maxBufferLength: 1,
+    //   liveBackBufferLength: 0,
+    //   liveSyncDuration: 0,
+    //   liveMaxLatencyDuration: 5,
+    //   liveDurationInfinity: true,
+    //   highBufferWatchdogPeriod: 1,
+    // };
 
-    const hls = new Hls(config);
+    const hls = new Hls();
 
     setHls(hls);
 
@@ -190,6 +190,12 @@ export const Player = ({ data }: { data: Data }) => {
     hls.loadSource(data.languages[selectedLanguage].url);
   }, [selectedLanguage]);
 
+  const goLive = () => {
+    if (!videoRef.current) return;
+
+    videoRef.current.currentTime = videoRef.current.duration;
+  };
+
   const fullScreen = () => {
     if (!isFullScreen) {
       document.getElementById("body")?.requestFullscreen({
@@ -251,7 +257,10 @@ export const Player = ({ data }: { data: Data }) => {
               onClick={() => setIsPlaying(true)}
             />
           )}
-          <div className="flex items-center gap-3 opacity-75 hover:opacity-100 transition-opacity cursor-pointer">
+          <div
+            className="flex items-center gap-3 opacity-75 hover:opacity-100 transition-opacity cursor-pointer"
+            onClick={goLive}
+          >
             <div className="bg-red-600 h-2 w-2 rounded-full" />
             <p className="text-white leading-none">Live</p>
           </div>
