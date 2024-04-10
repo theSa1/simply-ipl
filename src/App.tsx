@@ -141,10 +141,14 @@ function App() {
 
   const fullScreen = () => {
     if (!isFullScreen) {
-      document.getElementById("body")?.requestFullscreen();
+      document.getElementById("body")?.requestFullscreen({
+        navigationUI: "hide",
+      });
+      screen.orientation.lock("landscape-primary");
       setIsFullScreen(true);
     } else {
       document.exitFullscreen();
+      screen.orientation.unlock();
       setIsFullScreen(false);
     }
   };
