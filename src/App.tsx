@@ -222,7 +222,7 @@ function App() {
   };
 
   return (
-    <div className="h-screen w-screen bg-zinc-950 relative dark">
+    <div className="h-screen w-screen bg-black relative dark">
       <video
         width="320"
         height="240"

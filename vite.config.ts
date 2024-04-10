@@ -12,7 +12,7 @@ export default defineConfig({
       manifest: {
         name: "Simply IPL",
         short_name: "IPL",
-        theme_color: "#09090b",
+        theme_color: "#000",
         orientation: "landscape",
         icons: [
           {
