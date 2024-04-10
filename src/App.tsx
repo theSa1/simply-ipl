@@ -24,11 +24,12 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isControlsVisible, setIsControlsVisible, isControlsVisibleRef] =
     useRefState(true);
-  const [quality, setQuality] = useState<"360p" | "480p" | "720p" | "1080p">(
-    "480p"
-  );
+  const [quality, setQuality] = useState(0);
+  const [selectedQuality, setSelectedQuality] = useState<number>(-1);
+  const [availableQualities, setAvailableQualities] = useState<number[]>([]);
   const [isQualityMenuOpen, setIsQualityMenuOpen, isQualityMenuOpenRef] =
     useRefState(false);
+  const [hls, setHls] = useState<Hls>();
 
   useEffect(() => {
     const config = {
@@ -43,13 +44,21 @@ function App() {
 
     const hls = new Hls(config);
 
+    setHls(hls);
+
     if (Hls.isSupported() && videoRef.current) {
       hls.loadSource(
-        `https://prod-sports-hin.jiocinema.com/hls/live/2100323/hd_akamai_iosmob_avc_hin_ipl_s1_m1090424/master_${quality}.m3u8`
+        "https://prod-sports-north.jiocinema.com/hls/live/2109750/hd_akamai_iosmob_avc_guj_ipl_s1_m1090424/master.m3u8"
       );
       hls.attachMedia(videoRef.current);
+      hls.on(Hls.Events.LEVEL_LOADED, () => {
+        setAvailableQualities(hls.levels.map((level) => level.height));
+      });
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         videoRef.current?.play();
+      });
+      hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
+        setQuality(data.level);
       });
       hls.on(Hls.Events.ERROR, (err) => {
         console.log(err);
@@ -58,12 +67,6 @@ function App() {
       console.error("HLS is not supported");
     }
 
-    return () => {
-      hls.destroy();
-    };
-  }, [quality]);
-
-  useEffect(() => {
     window.addEventListener("fullscreenchange", () => {
       if (document.fullscreenElement) {
         setIsFullScreen(true);
@@ -129,7 +132,17 @@ function App() {
         setIsPlaying((prev) => !prev);
       }
     });
+
+    return () => {
+      hls.destroy();
+    };
   }, []);
+
+  useEffect(() => {
+    if (!hls) return;
+
+    hls.currentLevel = selectedQuality;
+  }, [selectedQuality]);
 
   useEffect(() => {
     if (!isControlsVisible) {
@@ -212,7 +225,7 @@ function App() {
             >
               <DropdownMenuTrigger asChild>
                 <p className="text-white cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
-                  {quality}
+                  {availableQualities[quality]}
                 </p>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -224,29 +237,20 @@ function App() {
                 <DropdownMenuLabel>Quality</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuCheckboxItem
-                  checked={quality === "360p"}
-                  onCheckedChange={() => setQuality("360p")}
+                  checked={selectedQuality === -1}
+                  onCheckedChange={() => setSelectedQuality(-1)}
                 >
-                  360p
+                  Auto
                 </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={quality === "480p"}
-                  onCheckedChange={() => setQuality("480p")}
-                >
-                  480p
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={quality === "720p"}
-                  onCheckedChange={() => setQuality("720p")}
-                >
-                  720p
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={quality === "1080p"}
-                  onCheckedChange={() => setQuality("1080p")}
-                >
-                  1080p
-                </DropdownMenuCheckboxItem>
+                {availableQualities.map((q, i) => (
+                  <DropdownMenuCheckboxItem
+                    key={q}
+                    checked={selectedQuality === i}
+                    onCheckedChange={() => setSelectedQuality(i)}
+                  >
+                    {q}p
+                  </DropdownMenuCheckboxItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
