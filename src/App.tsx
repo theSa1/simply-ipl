@@ -6,6 +6,7 @@ import { MuteIcon } from "./icons/mute";
 import { UnmuteIcon } from "./icons/unmute";
 import { FullscreenIcon } from "./icons/fullscreen";
 import { ExitFullscreenIcon } from "./icons/exit-fullscreen";
+import useRefState from "react-usestateref";
 import { cn } from "./lib/utils";
 import {
   DropdownMenu,
@@ -21,10 +22,13 @@ function App() {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isControlsVisible, setIsControlsVisible] = useState(true);
+  const [isControlsVisible, setIsControlsVisible, isControlsVisibleRef] =
+    useRefState(true);
   const [quality, setQuality] = useState<"360p" | "480p" | "720p" | "1080p">(
     "480p"
   );
+  const [isQualityMenuOpen, setIsQualityMenuOpen, isQualityMenuOpenRef] =
+    useRefState(false);
 
   useEffect(() => {
     const config = {
@@ -84,36 +88,40 @@ function App() {
       }
     });
 
-    let timeout = setTimeout(() => {
-      setIsControlsVisible(false);
-    }, 3000);
+    let timeout: NodeJS.Timeout;
+
+    const timeoutHandler = () => {
+      if (isQualityMenuOpenRef.current) {
+        setIsControlsVisible(true);
+        timeout = setTimeout(timeoutHandler, 3000);
+      } else {
+        setIsControlsVisible(false);
+      }
+    };
+
+    timeout = setTimeout(timeoutHandler, 3000);
 
     window.addEventListener("touchend", () => {
       console.log("touch");
-      setIsControlsVisible((isControlsVisible) => {
-        if (isControlsVisible) {
-          console.log("visible");
-          clearTimeout(timeout);
-          return false;
-        } else {
-          console.log("not visible");
-          clearTimeout(timeout);
-          timeout = setTimeout(() => {
-            setIsControlsVisible(false);
-          }, 3000);
-          return true;
-        }
-      });
+      if (isQualityMenuOpenRef.current) return true;
+      if (isControlsVisibleRef.current) {
+        console.log("visible");
+        clearTimeout(timeout);
+        setIsControlsVisible(false);
+      } else {
+        console.log("not visible");
+        clearTimeout(timeout);
+        timeout = setTimeout(timeoutHandler, 3000);
+        setIsControlsVisible(true);
+      }
     });
 
     window.addEventListener("mousemove", () => {
       if (window.matchMedia("(pointer: coarse)").matches) return;
-      console.log("mouse");
+
       setIsControlsVisible(true);
       clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        setIsControlsVisible(false);
-      }, 3000);
+      timeout = setTimeout(timeoutHandler, 3000);
     });
 
     window.addEventListener("keydown", (e) => {
@@ -122,6 +130,14 @@ function App() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!isControlsVisible) {
+      document.body.style.cursor = "none";
+    } else {
+      document.body.style.cursor = "auto";
+    }
+  }, [isControlsVisible]);
 
   const fullScreen = () => {
     if (!isFullScreen) {
@@ -186,7 +202,10 @@ function App() {
         </div>
         <div className="flex items-center space-x-4">
           <div>
-            <DropdownMenu>
+            <DropdownMenu
+              onOpenChange={setIsQualityMenuOpen}
+              open={isQualityMenuOpen}
+            >
               <DropdownMenuTrigger asChild>
                 <p className="text-white cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
                   {quality}
