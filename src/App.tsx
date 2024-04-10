@@ -43,7 +43,7 @@ function App() {
   }>();
   const [selectedLanguage, setSelectedLanguage] = useState<number>(0);
   const [hls, setHls] = useState<Hls>();
-  const [isLandscape, setIsLandscape] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(true);
 
   useEffect(() => {
     loadData();
