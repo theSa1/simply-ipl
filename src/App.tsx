@@ -276,7 +276,7 @@ function App() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   className={cn(
-                    "w-32 transition-opacity",
+                    "w-48 transition-opacity h-60 overflow-scroll",
                     isControlsVisible ? "opacity-100" : "opacity-0"
                   )}
                 >
