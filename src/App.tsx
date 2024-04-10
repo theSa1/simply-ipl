@@ -29,9 +29,23 @@ function App() {
   const [availableQualities, setAvailableQualities] = useState<number[]>([]);
   const [isQualityMenuOpen, setIsQualityMenuOpen, isQualityMenuOpenRef] =
     useRefState(false);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen, isLanguageMenuOpenRef] =
+    useRefState(false);
+  const [data, setData] = useState<{
+    thumbnail: string;
+    title: string;
+    languages: {
+      language: string;
+      url: string;
+      isDefault?: boolean;
+    }[];
+  }>();
+  const [selectedLanguage, setSelectedLanguage] = useState<number>(0);
   const [hls, setHls] = useState<Hls>();
 
   useEffect(() => {
+    loadData();
+
     const config = {
       enableWorker: true,
       maxBufferLength: 1,
@@ -47,11 +61,9 @@ function App() {
     setHls(hls);
 
     if (Hls.isSupported() && videoRef.current) {
-      hls.loadSource(
-        "https://prod-sports-north.jiocinema.com/hls/live/2109750/hd_akamai_iosmob_avc_guj_ipl_s1_m1090424/master.m3u8"
-      );
       hls.attachMedia(videoRef.current);
       hls.on(Hls.Events.LEVEL_LOADED, () => {
+        console.log(hls.levels);
         setAvailableQualities(hls.levels.map((level) => level.height));
       });
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -152,6 +164,37 @@ function App() {
     }
   }, [isControlsVisible]);
 
+  useEffect(() => {
+    if (!data || !hls) return;
+
+    document.title = data.title;
+
+    const defaultLanguage = data.languages.find((lang, i) => {
+      if (lang.isDefault) {
+        setSelectedLanguage(i);
+        return true;
+      }
+    });
+
+    if (defaultLanguage) {
+      hls.loadSource(defaultLanguage.url);
+    } else {
+      hls.loadSource(data.languages[0].url);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (!data || !hls) return;
+
+    hls.loadSource(data.languages[selectedLanguage].url);
+  }, [selectedLanguage]);
+
+  const loadData = async () => {
+    const res = await fetch("https://api.npoint.io/5e080f808be4635d9e7b");
+    const data = await res.json();
+    setData(data);
+  };
+
   const fullScreen = () => {
     if (!isFullScreen) {
       document.getElementById("body")?.requestFullscreen({
@@ -186,6 +229,7 @@ function App() {
         muted
         ref={videoRef}
         className="h-full w-full"
+        poster={data?.thumbnail}
       />
       {/* Contrals */}
       <div
@@ -218,6 +262,38 @@ function App() {
           </div>
         </div>
         <div className="flex items-center space-x-4">
+          {data && (
+            <div>
+              <DropdownMenu
+                onOpenChange={setIsLanguageMenuOpen}
+                open={isLanguageMenuOpen}
+              >
+                <DropdownMenuTrigger asChild>
+                  <p className="text-white cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
+                    {data.languages[selectedLanguage].language}
+                  </p>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className={cn(
+                    "w-32 transition-opacity",
+                    isControlsVisible ? "opacity-100" : "opacity-0"
+                  )}
+                >
+                  <DropdownMenuLabel>Languages</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {data.languages.map((language, i) => (
+                    <DropdownMenuCheckboxItem
+                      key={language.language}
+                      checked={selectedLanguage === i}
+                      onCheckedChange={() => setSelectedLanguage(i)}
+                    >
+                      {language.language}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
           <div>
             <DropdownMenu
               onOpenChange={setIsQualityMenuOpen}
@@ -225,7 +301,7 @@ function App() {
             >
               <DropdownMenuTrigger asChild>
                 <p className="text-white cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
-                  {availableQualities[quality]}
+                  {availableQualities[quality]}p
                 </p>
               </DropdownMenuTrigger>
               <DropdownMenuContent
