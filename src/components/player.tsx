@@ -216,7 +216,7 @@ export const Player = ({ data }: { data: Data }) => {
   };
 
   return (
-    <div className="h-screen w-screen bg-black relative dark">
+    <div className="h-screen w-screen bg-black relative dark text-sm">
       <video
         width="320"
         height="240"
