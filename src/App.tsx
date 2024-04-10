@@ -106,7 +106,7 @@ function App() {
     let timeout: NodeJS.Timeout;
 
     const timeoutHandler = () => {
-      if (isQualityMenuOpenRef.current) {
+      if (isQualityMenuOpenRef.current || isLanguageMenuOpenRef.current) {
         setIsControlsVisible(true);
         timeout = setTimeout(timeoutHandler, 3000);
       } else {
@@ -118,7 +118,8 @@ function App() {
 
     window.addEventListener("touchend", () => {
       console.log("touch");
-      if (isQualityMenuOpenRef.current) return true;
+      if (isQualityMenuOpenRef.current || isLanguageMenuOpenRef.current)
+        return true;
       if (isControlsVisibleRef.current) {
         console.log("visible");
         clearTimeout(timeout);
