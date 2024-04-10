@@ -334,14 +334,15 @@ function App() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          {videoRef.current?.requestPictureInPicture && (
-            <PIPIcon
-              className="h-8 w-8 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
-              onClick={() => {
-                videoRef.current?.requestPictureInPicture();
-              }}
-            />
-          )}
+          {window.innerHeight < window.innerWidth &&
+            videoRef.current?.requestPictureInPicture && (
+              <PIPIcon
+                className="h-8 w-8 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
+                onClick={() => {
+                  videoRef.current?.requestPictureInPicture();
+                }}
+              />
+            )}
           {isMuted ? (
             <MuteIcon
               className="h-8 w-8 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
