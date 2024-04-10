@@ -77,7 +77,7 @@
   }
 
   .h-screen {
-    height: 100svh;
+    height: 100svh !important;
   }
 }
 
