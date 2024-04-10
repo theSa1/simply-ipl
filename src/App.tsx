@@ -18,7 +18,6 @@ import {
 
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -106,7 +105,7 @@ function App() {
 
   const fullScreen = () => {
     if (!isFullScreen) {
-      containerRef.current?.requestFullscreen();
+      document.getElementById("body")?.requestFullscreen();
       setIsFullScreen(true);
     } else {
       document.exitFullscreen();
@@ -126,10 +125,7 @@ function App() {
   };
 
   return (
-    <div
-      className="h-screen w-screen bg-zinc-950 relative dark"
-      ref={containerRef}
-    >
+    <div className="h-screen w-screen bg-zinc-950 relative dark">
       <video
         width="320"
         height="240"
