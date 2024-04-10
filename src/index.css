@@ -75,6 +75,10 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .h-screen {
+    height: 100svh;
+  }
 }
 
 @layer components {
