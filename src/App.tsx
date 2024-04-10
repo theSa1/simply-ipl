@@ -88,6 +88,19 @@ function App() {
       setIsControlsVisible(false);
     }, 3000);
 
+    window.addEventListener("touchend", () => {
+      if (isControlsVisible) {
+        setIsControlsVisible(false);
+        clearTimeout(timeout);
+      } else {
+        setIsControlsVisible(true);
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          setIsControlsVisible(false);
+        }, 3000);
+      }
+    });
+
     window.addEventListener("mousemove", () => {
       setIsControlsVisible(true);
       clearTimeout(timeout);
