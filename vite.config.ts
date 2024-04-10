@@ -42,7 +42,7 @@ export default defineConfig({
             form_factor: "narrow",
           },
         ],
-        display: "fullscreen",
+        display: "standalone",
       },
     }),
   ],
