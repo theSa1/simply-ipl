@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
+import { PIPIcon } from "./icons/pip-icon";
 
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -333,6 +334,14 @@ function App() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          {videoRef.current?.requestPictureInPicture && (
+            <PIPIcon
+              className="h-8 w-8 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
+              onClick={() => {
+                videoRef.current?.requestPictureInPicture();
+              }}
+            />
+          )}
           {isMuted ? (
             <MuteIcon
               className="h-8 w-8 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
