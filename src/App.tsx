@@ -89,19 +89,26 @@ function App() {
     }, 3000);
 
     window.addEventListener("touchend", () => {
-      if (isControlsVisible) {
-        setIsControlsVisible(false);
-        clearTimeout(timeout);
-      } else {
-        setIsControlsVisible(true);
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          setIsControlsVisible(false);
-        }, 3000);
-      }
+      console.log("touch");
+      setIsControlsVisible((isControlsVisible) => {
+        if (isControlsVisible) {
+          console.log("visible");
+          clearTimeout(timeout);
+          return false;
+        } else {
+          console.log("not visible");
+          clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            setIsControlsVisible(false);
+          }, 3000);
+          return true;
+        }
+      });
     });
 
     window.addEventListener("mousemove", () => {
+      if (window.matchMedia("(pointer: coarse)").matches) return;
+      console.log("mouse");
       setIsControlsVisible(true);
       clearTimeout(timeout);
       timeout = setTimeout(() => {
