@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PIPIcon } from "@/icons/pip-icon";
+import { LoadingSpinner } from "./ui/loading-spinner";
 
 export const Player = ({ data }: { data: Data }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -36,39 +37,43 @@ export const Player = ({ data }: { data: Data }) => {
   const [selectedLanguage, setSelectedLanguage] = useState<number>(0);
   const [hls, setHls] = useState<Hls>();
   const [isLandscape, setIsLandscape] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // const config = {
-    //   enableWorker: true,
-    //   maxBufferLength: 1,
-    //   liveBackBufferLength: 0,
-    //   liveSyncDuration: 0,
-    //   liveMaxLatencyDuration: 5,
-    //   liveDurationInfinity: true,
-    //   highBufferWatchdogPeriod: 1,
-    // };
-
     const hls = new Hls();
 
-    setHls(hls);
-
     if (Hls.isSupported() && videoRef.current) {
+      setHls(hls);
+
       hls.attachMedia(videoRef.current);
-      hls.on(Hls.Events.LEVEL_LOADED, () => {
-        console.log(hls.levels);
-        setAvailableQualities(hls.levels.map((level) => level.height));
+
+      hls.on(Hls.Events.LEVELS_UPDATED, (_, { levels }) => {
+        setAvailableQualities(levels.map((level) => level.height));
       });
+
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        videoRef.current?.play();
+        if (!videoRef.current) return;
+        videoRef.current.muted = true;
+        videoRef.current.play();
       });
+
       hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
         setQuality(data.level);
       });
-      hls.on(Hls.Events.ERROR, (err) => {
-        console.log(err);
+
+      hls.on(Hls.Events.ERROR, (err, { details }) => {
+        console.error(err, details);
+        if (details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+          setIsLoading(true);
+        }
+      });
+
+      hls.on(Hls.Events.FRAG_BUFFERED, () => {
+        setIsLoading(false);
       });
     } else {
       console.error("HLS is not supported");
+      alert("HLS is not supported");
     }
 
     window.addEventListener("fullscreenchange", () => {
@@ -232,6 +237,11 @@ export const Player = ({ data }: { data: Data }) => {
         className="h-full w-full"
         poster={data?.thumbnail}
       />
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
+          <LoadingSpinner />
+        </div>
+      )}
       {/* Contrals */}
       <div
         className={cn(
@@ -249,12 +259,18 @@ export const Player = ({ data }: { data: Data }) => {
           {isPlaying ? (
             <PauseIcon
               className="h-6 w-6 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
-              onClick={() => setIsPlaying(false)}
+              onClick={() => {
+                setIsPlaying(false);
+                videoRef.current?.pause();
+              }}
             />
           ) : (
             <PlayIcon
               className="h-6 w-6 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
-              onClick={() => setIsPlaying(true)}
+              onClick={() => {
+                setIsPlaying(true);
+                videoRef.current?.play();
+              }}
             />
           )}
           <div
