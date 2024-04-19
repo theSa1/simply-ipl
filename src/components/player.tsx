@@ -1,13 +1,10 @@
 import { Data } from "@/App";
-import Hls from "hls.js";
-import { useEffect, useRef, useState } from "react";
 import { PlayIcon } from "@/icons/play";
 import { PauseIcon } from "@/icons/pause";
 import { MuteIcon } from "@/icons/mute";
 import { UnmuteIcon } from "@/icons/unmute";
 import { FullscreenIcon } from "@/icons/fullscreen";
 import { ExitFullscreenIcon } from "@/icons/exit-fullscreen";
-import useRefState from "react-usestateref";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -19,212 +16,32 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PIPIcon } from "@/icons/pip-icon";
 import { LoadingSpinner } from "./ui/loading-spinner";
+import { useIpl } from "@/hooks/useIpl";
 
 export const Player = ({ data }: { data: Data }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isControlsVisible, setIsControlsVisible, isControlsVisibleRef] =
-    useRefState(true);
-  const [quality, setQuality] = useState(0);
-  const [selectedQuality, setSelectedQuality] = useState<number>(-1);
-  const [availableQualities, setAvailableQualities] = useState<number[]>([]);
-  const [isQualityMenuOpen, setIsQualityMenuOpen, isQualityMenuOpenRef] =
-    useRefState(false);
-  const [isLanguageMenuOpen, setIsLanguageMenuOpen, isLanguageMenuOpenRef] =
-    useRefState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<number>(0);
-  const [hls, setHls] = useState<Hls>();
-  const [isLandscape, setIsLandscape] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const hls = new Hls();
-
-    if (Hls.isSupported() && videoRef.current) {
-      setHls(hls);
-
-      hls.attachMedia(videoRef.current);
-
-      hls.on(Hls.Events.LEVELS_UPDATED, (_, { levels }) => {
-        setAvailableQualities(levels.map((level) => level.height));
-      });
-
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        if (!videoRef.current) return;
-        videoRef.current.muted = true;
-        videoRef.current.play();
-      });
-
-      hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
-        setQuality(data.level);
-      });
-
-      hls.on(Hls.Events.ERROR, (err, { details }) => {
-        console.error(err, details);
-        if (details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
-          setIsLoading(true);
-        }
-      });
-
-      hls.on(Hls.Events.FRAG_BUFFERED, () => {
-        setIsLoading(false);
-      });
-    } else {
-      console.error("HLS is not supported");
-      alert("HLS is not supported");
-    }
-
-    window.addEventListener("fullscreenchange", () => {
-      if (document.fullscreenElement) {
-        setIsFullScreen(true);
-      } else {
-        setIsFullScreen(false);
-      }
-    });
-
-    videoRef.current?.addEventListener("play", () => {
-      setIsPlaying(true);
-    });
-
-    videoRef.current?.addEventListener("pause", () => {
-      setIsPlaying(false);
-    });
-
-    videoRef.current?.addEventListener("volumechange", () => {
-      if (videoRef.current?.muted) {
-        setIsMuted(true);
-      } else {
-        setIsMuted(false);
-      }
-    });
-
-    let timeout: NodeJS.Timeout;
-
-    const timeoutHandler = () => {
-      if (isQualityMenuOpenRef.current || isLanguageMenuOpenRef.current) {
-        setIsControlsVisible(true);
-        timeout = setTimeout(timeoutHandler, 3000);
-      } else {
-        setIsControlsVisible(false);
-      }
-    };
-
-    timeout = setTimeout(timeoutHandler, 3000);
-
-    window.addEventListener("touchend", () => {
-      console.log("touch");
-      if (isQualityMenuOpenRef.current || isLanguageMenuOpenRef.current)
-        return true;
-      if (isControlsVisibleRef.current) {
-        console.log("visible");
-        clearTimeout(timeout);
-        setIsControlsVisible(false);
-      } else {
-        console.log("not visible");
-        clearTimeout(timeout);
-        timeout = setTimeout(timeoutHandler, 3000);
-        setIsControlsVisible(true);
-      }
-    });
-
-    window.addEventListener("mousemove", () => {
-      if (window.matchMedia("(pointer: coarse)").matches) return;
-
-      setIsControlsVisible(true);
-      clearTimeout(timeout);
-      timeout = setTimeout(timeoutHandler, 3000);
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === " ") {
-        setIsPlaying((prev) => !prev);
-      }
-    });
-
-    window.addEventListener("resize", () => {
-      if (window.innerHeight < window.innerWidth) {
-        setIsLandscape(true);
-      } else {
-        setIsLandscape(false);
-      }
-    });
-
-    return () => {
-      hls.destroy();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!hls) return;
-
-    hls.currentLevel = selectedQuality;
-  }, [selectedQuality]);
-
-  useEffect(() => {
-    if (!isControlsVisible) {
-      document.body.style.cursor = "none";
-    } else {
-      document.body.style.cursor = "auto";
-    }
-  }, [isControlsVisible]);
-
-  useEffect(() => {
-    if (!data || !hls) return;
-
-    document.title = data.title;
-
-    const defaultLanguage = data.languages.find((lang, i) => {
-      if (lang.isDefault) {
-        setSelectedLanguage(i);
-        return true;
-      }
-    });
-
-    if (defaultLanguage) {
-      hls.loadSource(defaultLanguage.url);
-    } else {
-      hls.loadSource(data.languages[0].url);
-    }
-  }, [data]);
-
-  useEffect(() => {
-    if (!data || !hls) return;
-
-    hls.loadSource(data.languages[selectedLanguage].url);
-  }, [selectedLanguage]);
-
-  const goLive = () => {
-    if (!videoRef.current) return;
-
-    videoRef.current.currentTime = videoRef.current.duration;
-  };
-
-  const fullScreen = () => {
-    if (!isFullScreen) {
-      document.getElementById("body")?.requestFullscreen({
-        navigationUI: "hide",
-      });
-      screen.orientation.lock("landscape");
-      setIsFullScreen(true);
-    } else {
-      document.exitFullscreen();
-      screen.orientation.unlock();
-      setIsFullScreen(false);
-    }
-  };
-
-  const mute = () => {
-    if (!videoRef.current) return;
-    if (!isMuted) {
-      videoRef.current.muted = true;
-      setIsMuted(true);
-    } else {
-      videoRef.current.muted = false;
-      setIsMuted(false);
-    }
-  };
+  const {
+    isControlsVisible,
+    isFullScreen,
+    isLandscape,
+    isLanguageSelectorVisible,
+    isLoaderVisible,
+    isMuted,
+    isPlaying,
+    isQualitySelectorVisible,
+    setIsLanguageSelectorVisible,
+    setIsQualitySelectorVisible,
+    videoRef,
+    availableLanguages,
+    availableQualities,
+    selectedLanguage,
+    selectedQuality,
+    setSelectedLanguage,
+    setSelectedQuality,
+    mute,
+    fullscreen,
+    currentQuality,
+    goLive,
+  } = useIpl(data);
 
   return (
     <div className="h-screen w-screen bg-black relative dark text-sm">
@@ -237,7 +54,7 @@ export const Player = ({ data }: { data: Data }) => {
         className="h-full w-full"
         poster={data?.thumbnail}
       />
-      {isLoading && (
+      {isLoaderVisible && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
           <LoadingSpinner />
         </div>
@@ -252,7 +69,7 @@ export const Player = ({ data }: { data: Data }) => {
       <div
         className={cn(
           "absolute bottom-0 left-0 right-0 flex justify-between items-center px-5 z-10 h-14 transition-opacity",
-          isControlsVisible ? "opacity-100" : "opacity-0"
+          isControlsVisible ? "opacity-100" : "opacity-0 hidden"
         )}
       >
         <div className="flex items-center space-x-4">
@@ -260,7 +77,6 @@ export const Player = ({ data }: { data: Data }) => {
             <PauseIcon
               className="h-6 w-6 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
               onClick={() => {
-                setIsPlaying(false);
                 videoRef.current?.pause();
               }}
             />
@@ -268,7 +84,6 @@ export const Player = ({ data }: { data: Data }) => {
             <PlayIcon
               className="h-6 w-6 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
               onClick={() => {
-                setIsPlaying(true);
                 videoRef.current?.play();
               }}
             />
@@ -285,12 +100,12 @@ export const Player = ({ data }: { data: Data }) => {
           {data && (
             <div>
               <DropdownMenu
-                onOpenChange={setIsLanguageMenuOpen}
-                open={isLanguageMenuOpen}
+                onOpenChange={setIsLanguageSelectorVisible}
+                open={isLanguageSelectorVisible}
               >
                 <DropdownMenuTrigger asChild>
                   <p className="text-white cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
-                    {data.languages[selectedLanguage].language}
+                    {availableLanguages[selectedLanguage]}
                   </p>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -301,13 +116,13 @@ export const Player = ({ data }: { data: Data }) => {
                 >
                   <DropdownMenuLabel>Languages</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {data.languages.map((language, i) => (
+                  {availableLanguages.map((language, i) => (
                     <DropdownMenuCheckboxItem
-                      key={language.language}
+                      key={language}
                       checked={selectedLanguage === i}
                       onCheckedChange={() => setSelectedLanguage(i)}
                     >
-                      {language.language}
+                      {language}
                     </DropdownMenuCheckboxItem>
                   ))}
                 </DropdownMenuContent>
@@ -316,14 +131,14 @@ export const Player = ({ data }: { data: Data }) => {
           )}
           <div>
             <DropdownMenu
-              onOpenChange={setIsQualityMenuOpen}
-              open={isQualityMenuOpen}
+              onOpenChange={setIsQualitySelectorVisible}
+              open={isQualitySelectorVisible}
             >
               <DropdownMenuTrigger asChild>
                 <p className="text-white cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
-                  {quality === undefined || availableQualities.length === 0
+                  {currentQuality === -1 || availableQualities.length === 0
                     ? "Auto"
-                    : `${availableQualities[quality]}p`}
+                    : `${availableQualities[currentQuality]}p`}
                 </p>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -374,12 +189,12 @@ export const Player = ({ data }: { data: Data }) => {
           {isFullScreen ? (
             <ExitFullscreenIcon
               className="h-6 w-6 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
-              onClick={fullScreen}
+              onClick={fullscreen}
             />
           ) : (
             <FullscreenIcon
               className="h-6 w-6 transition-opacity text-white opacity-75 hover:opacity-100 cursor-pointer"
-              onClick={fullScreen}
+              onClick={fullscreen}
             />
           )}
         </div>
