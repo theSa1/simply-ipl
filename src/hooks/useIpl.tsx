@@ -77,24 +77,42 @@ export const useIpl = (data: Data) => {
       });
     };
 
-    let mouseMoveTimeout: NodeJS.Timeout;
+    let ControlsVisibilityTimeout: NodeJS.Timeout;
+
+    const handleTimeout = () => {
+      if (isControlsVisibleRef.current) {
+        if (
+          !isQualitySelectorVisibleRef.current &&
+          !isLanguageSelectorVisibleRef.current
+        ) {
+          setIsControlsVisible(false);
+        }
+      }
+    };
 
     const handleMouseMove = () => {
+      if (!("ontouchstart" in window)) return;
+
       setIsControlsVisible(true);
-      clearTimeout(mouseMoveTimeout);
+      clearTimeout(ControlsVisibilityTimeout);
 
-      const handleTimeout = () => {
-        if (isControlsVisibleRef.current) {
-          if (
-            !isQualitySelectorVisibleRef.current &&
-            !isLanguageSelectorVisibleRef.current
-          ) {
-            setIsControlsVisible(false);
-          }
-        }
-      };
+      ControlsVisibilityTimeout = setTimeout(handleTimeout, 3000);
+    };
 
-      mouseMoveTimeout = setTimeout(handleTimeout, 3000);
+    const handleTouch = () => {
+      if (
+        isQualitySelectorVisibleRef.current ||
+        isLanguageSelectorVisibleRef.current
+      )
+        return;
+
+      clearTimeout(ControlsVisibilityTimeout);
+      if (isControlsVisibleRef.current) {
+        setIsControlsVisible(false);
+      } else {
+        ControlsVisibilityTimeout = setTimeout(handleTimeout, 3000);
+        setIsControlsVisible(true);
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -118,6 +136,7 @@ export const useIpl = (data: Data) => {
     handleOrientationChange();
 
     window.addEventListener("orientationchange", handleOrientationChange);
+    window.addEventListener("touchend", handleTouch);
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("keydown", handleKeyDown);
     video.addEventListener("play", handlePlay);
