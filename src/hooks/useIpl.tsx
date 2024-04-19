@@ -179,8 +179,7 @@ export const useIpl = (data: Data) => {
       setCurrentQuality(data.level);
     });
 
-    hls.on(Hls.Events.ERROR, (err, { details }) => {
-      console.error(err, details);
+    hls.on(Hls.Events.ERROR, (_, { details }) => {
       if (details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
         setIsLoaderVisible(true);
       }

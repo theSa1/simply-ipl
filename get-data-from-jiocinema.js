@@ -1,10 +1,11 @@
 import fs from "fs";
+import dotenv from "dotenv";
 
-const MATCH_ID = "3948193";
-// 3944024
-// 3943969
-const ACCESS_TOKEN =
-  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImF1dGhUb2tlbklkIjoiZjI4MjZkODEtNTczNy00M2MxLWI5YzktODc3YzI5ZTQ2MjEzIiwidXNlcklkIjoiODNmNTAyNTktZjkxNS00ZDg5LWI1ZWEtMWNhMTk3YjZlNzJjIiwidXNlclR5cGUiOiJOT05KSU8iLCJvcyI6IndlYiIsImRldmljZVR5cGUiOiJwYyIsImFjY2Vzc0xldmVsIjoiOSIsImRldmljZUlkIjoiNmYzMjJmNGQtMmM0Yy00Y2ZiLWExMDYtYTg2ODcxMjg5MWYyIiwiZXh0cmEiOiJ7XCJudW1iZXJcIjpcIjc3enFlbXcyWUhxcjN4NzRmNDNzL0xIREViUnhOWHRPMnBheVUrcFpDWlpCYjZpMG5Jak9NN009XCIsXCJhZHNcIjpcInllc1wiLFwicGxhbmRldGFpbHNcIjp7XCJhZHNcIjpcInllc1wiLFwiUGFja2FnZUluZm9cIjpbXX0sXCJqVG9rZW5cIjpcIlwiLFwidXNlckRldGFpbHNcIjpcIlNjQVdDQ3ptZTVJTFEwRVRpSEFPUnpKTGtZeHBDQ3VDbmduS3VNdFEySk9TMzdUY1o3UWxPZkJ0Rm10K3lNRFJkU1M0aUdkMHpoTGZWNUwzdXJTcDJlVnd1OStseCt5QU54djhiQm1LQXAzZjhhbmlpUndKTzVVWnMxZmo2M2luT3NQQlVVS3RVeWpoWkRTeFYxeTdTbjI3QWh3dGp3PT1cIn0iLCJzdWJzY3JpYmVySWQiOiIiLCJhcHBOYW1lIjoiUkpJTF9KaW9DaW5lbWEiLCJkZWdyYWRlZCI6ImZhbHNlIiwiYWRzIjoieWVzIiwicHJvZmlsZUlkIjoiMjA2ZmFkZmQtYjk3Yi00Y2RlLWE5OTYtNzIyNDJjYzIzYjBkIiwiYWRJZCI6IjZmMzIyZjRkLTJjNGMtNGNmYi1hMTA2LWE4Njg3MTI4OTFmMiIsImFkc0NvbmZpZyI6eyJpbnN0cmVhbUFkcyI6eyJsaXZlIjp7ImVuYWJsZWQiOnRydWV9LCJ2b2QiOnsiZW5hYmxlZCI6dHJ1ZX19fSwiZXhwZXJpbWVudEtleSI6eyJjb25maWdLZXkiOiIyMDZmYWRmZC1iOTdiLTRjZGUtYTk5Ni03MjI0MmNjMjNiMGQiLCJncm91cElkIjo0NzA1fSwicHJvZmlsZURldGFpbHMiOnsicHJvZmlsZVR5cGUiOiJhZHVsdCIsImNvbnRlbnRBZ2VSYXRpbmciOiJBIn0sInZlcnNpb24iOjIwMjQwMzA0MH0sImV4cCI6MTcxMzk2NzgyMCwiaWF0IjoxNzEzMzYzMDIwfQ.J4PowlWPyF7rwUBHe5o6HlWgOCulgcUw2VHK2Jnmma8z2iLrBHkRlaPZlupd9vnPUHQUj1q8Fw5zb660RvJNOg";
+dotenv.config({
+  path: ".env.local",
+});
+
+const { ACCESS_TOKEN, MATCH_ID } = process.env;
 
 const main = async () => {
   const res = await fetch(
@@ -16,7 +17,7 @@ const main = async () => {
   console.log(data);
 
   const title = data.result[0].fullTitle;
-  const thumbnail = "https://v3img.voot.com" + data.result[0].imageUri;
+  const thumbnail = "https://v3img.voot.com/" + data.result[0].imageUri;
 
   const languages = [];
 
