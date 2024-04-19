@@ -206,7 +206,10 @@ export const useIpl = (data: Data) => {
     if (!hls) return;
     hls.currentLevel = selectedQuality;
     posthog.capture("Quality", {
-      quality: availableQualities[selectedQuality].toString(),
+      quality:
+        selectedQuality === -1
+          ? "Auto"
+          : availableQualities[selectedQuality].toString(),
     });
   };
 
