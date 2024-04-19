@@ -137,18 +137,21 @@ export const useIpl = (data: Data) => {
 
     window.addEventListener("orientationchange", handleOrientationChange);
     window.addEventListener("touchend", handleTouch);
+    window.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("keydown", handleKeyDown);
     video.addEventListener("play", handlePlay);
     video.addEventListener("pause", handlePause);
     video.addEventListener("volumechange", handleMute);
-    video.addEventListener("mousemove", handleMouseMove);
 
     setupHls();
 
     return () => {
       window.removeEventListener("orientationchange", handleOrientationChange);
+      window.removeEventListener("touchend", handleTouch);
+      window.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("keydown", handleKeyDown);
       video.removeEventListener("play", handlePlay);
       video.removeEventListener("pause", handlePause);
       video.removeEventListener("volumechange", handleMute);
