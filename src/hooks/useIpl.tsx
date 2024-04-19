@@ -73,7 +73,7 @@ export const useIpl = (data: Data) => {
     const handleFullscreenChange = () => {
       setIsFullScreen(document.fullscreenElement !== null);
       posthog.capture("Fullscreen", {
-        action: isFullScreen ? "Enter" : "Exit",
+        action: document.fullscreenElement !== null ? "Enter" : "Exit",
       });
     };
 
