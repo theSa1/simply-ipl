@@ -83,7 +83,7 @@ export const useIpl = (data: Data) => {
       setIsMuted(video.muted);
       ReactGA.send({
         hitType: "event",
-        eventCategory: "Mute",
+        eventCategory: "Mute/Unmute",
         eventAction: video.muted ? "Mute" : "Unmute",
       });
     };
@@ -196,11 +196,23 @@ export const useIpl = (data: Data) => {
 
   const handleLanguageChange = () => {
     hls?.loadSource(data.languages[selectedLanguage].url);
+    ReactGA.send({
+      hitType: "event",
+      eventCategory: "Language",
+      eventAction: "Change",
+      eventLabel: data.languages[selectedLanguage].language,
+    });
   };
 
   const handleQualityChange = () => {
     if (!hls) return;
     hls.currentLevel = selectedQuality;
+    ReactGA.send({
+      hitType: "event",
+      eventCategory: "Quality",
+      eventAction: "Change",
+      eventLabel: availableQualities[selectedQuality].toString(),
+    });
   };
 
   useEffect(() => {
