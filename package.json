@@ -17,9 +17,9 @@
     "clsx": "^2.1.0",
     "hls.js": "^1.5.7",
     "lucide-react": "^0.366.0",
+    "posthog-js": "^1.128.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-ga4": "^2.1.0",
     "react-usestateref": "^1.0.8",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7"

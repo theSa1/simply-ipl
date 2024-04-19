@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Player } from "./components/player";
 import { LoadingSpinner } from "./components/ui/loading-spinner";
-import ReactGA from "react-ga4";
+import posthog from "posthog-js";
 
 export type Data = {
   thumbnail: string;
@@ -17,11 +17,10 @@ function App() {
   const [data, setData] = useState<Data | null>(null);
 
   useEffect(() => {
-    ReactGA.initialize("G-6BSMKBCH7N");
-    ReactGA.send({
-      hitType: "pageview",
-    });
     fetchData();
+    posthog.init(import.meta.env.VITE_POSTHOG_TRACKING_ID, {
+      api_host: "https://app.posthog.com",
+    });
   }, []);
 
   const fetchData = async () => {

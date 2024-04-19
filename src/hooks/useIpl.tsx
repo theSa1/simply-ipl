@@ -2,7 +2,7 @@ import { Data } from "@/App";
 import Hls from "hls.js";
 import { useEffect, useRef, useState } from "react";
 import useStateRef from "react-usestateref";
-import ReactGA from "react-ga4";
+import posthog from "posthog-js";
 
 export const useIpl = (data: Data) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -46,54 +46,34 @@ export const useIpl = (data: Data) => {
     const handleOrientationChange = () => {
       if (window.innerHeight > window.innerWidth) {
         setIsLandscape(false);
-        ReactGA.send({
-          hitType: "event",
-          eventCategory: "Orientation",
-          eventAction: "Portrait",
-        });
+        posthog.capture("Orientation", { orientation: "Portrait" });
       } else {
         setIsLandscape(true);
-        ReactGA.send({
-          hitType: "event",
-          eventCategory: "Orientation",
-          eventAction: "Landscape",
-        });
+        posthog.capture("Orientation", { orientation: "Landscape" });
       }
     };
 
     const handlePlay = () => {
       setIsPlaying(true);
-      ReactGA.send({
-        hitType: "event",
-        eventCategory: "Play/Pause",
-        eventAction: "Play",
-      });
+      posthog.capture("Play/Pause", { action: "Play" });
     };
 
     const handlePause = () => {
       setIsPlaying(false);
-      ReactGA.send({
-        hitType: "event",
-        eventCategory: "Play/Pause",
-        eventAction: "Pause",
-      });
+      posthog.capture("Play/Pause", { action: "Pause" });
     };
 
     const handleMute = () => {
       setIsMuted(video.muted);
-      ReactGA.send({
-        hitType: "event",
-        eventCategory: "Mute/Unmute",
-        eventAction: video.muted ? "Mute" : "Unmute",
+      posthog.capture("Mute/Unmute", {
+        action: video.muted ? "Mute" : "Unmute",
       });
     };
 
     const handleFullscreenChange = () => {
       setIsFullScreen(document.fullscreenElement !== null);
-      ReactGA.send({
-        hitType: "event",
-        eventCategory: "Fullscreen",
-        eventAction: isFullScreen ? "Enter" : "Exit",
+      posthog.capture("Fullscreen", {
+        action: isFullScreen ? "Enter" : "Exit",
       });
     };
 
@@ -196,22 +176,16 @@ export const useIpl = (data: Data) => {
 
   const handleLanguageChange = () => {
     hls?.loadSource(data.languages[selectedLanguage].url);
-    ReactGA.send({
-      hitType: "event",
-      eventCategory: "Language",
-      eventAction: "Change",
-      eventLabel: data.languages[selectedLanguage].language,
+    posthog.capture("Language", {
+      language: data.languages[selectedLanguage].language,
     });
   };
 
   const handleQualityChange = () => {
     if (!hls) return;
     hls.currentLevel = selectedQuality;
-    ReactGA.send({
-      hitType: "event",
-      eventCategory: "Quality",
-      eventAction: "Change",
-      eventLabel: availableQualities[selectedQuality].toString(),
+    posthog.capture("Quality", {
+      quality: availableQualities[selectedQuality].toString(),
     });
   };
 
